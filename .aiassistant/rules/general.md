@@ -14,7 +14,7 @@ Source Project
 ------------
 
 The base project is located at https://github.com/Haoming02/sd-webui-forge-classic/tree/neo.
-A local copy is available at `/var/git/github.com/Haoming02/sd-webui-forge-classic`.
+A copy of the project is available under `./sourceproject`.
 Only the `neo` branch is the head of the neo variant.
 Neo versions are prefixed with 2.x.
 For short reference we call it forge-neo.
@@ -27,6 +27,7 @@ It uses uv as a package manager while building.
 It uses version (tag) 2.7 of forge-neo.
 The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:2.7-cuda`.
 The dockerfile is cleanly documented so decisions taken and the reasoning behind it can be clearly understood.
+We want to keep the image size minimal by using a multi-stage build.
 
 ### Caddy
 

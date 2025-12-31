@@ -69,6 +69,7 @@ RUN apt-get update && apt-get install -y \
     && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
     && apt-get update && apt-get install -y \
     python3 \
+    # libgl1 and libglib2.0-0 are required by opencv-python (e.g., for autocrop) \
     libgl1 \
     libglib2.0-0 \
     libgoogle-perftools4 \
