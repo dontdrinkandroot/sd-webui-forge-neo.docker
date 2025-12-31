@@ -1,0 +1,14 @@
+.git
+.gitignore
+.aiassistant
+.idea
+Dockerfile
+models/*
+outputs/*
+local_estimations/*
+venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.env

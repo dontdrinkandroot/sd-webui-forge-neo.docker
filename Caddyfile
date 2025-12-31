@@ -1,0 +1,17 @@
+{
+    # Bind to all interfaces on port 80 and 443
+    # Use internal self-signed certificate for SSL
+    local_certs
+}
+
+:80, :443 {
+    # If AUTH_TOKEN is set, require Bearer token authentication
+    @auth {
+        expression {env.AUTH_TOKEN} != ""
+        not header_regexp Authorization "Bearer {env.AUTH_TOKEN}"
+    }
+    respond @auth "Unauthorized" 401
+
+    # Proxy all other requests to Forge Neo
+    reverse_proxy localhost:7860
+}
