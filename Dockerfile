@@ -28,6 +28,7 @@ RUN git clone --branch 2.7 --single-branch https://github.com/Haoming02/sd-webui
 # Set uv cache directory for persistent builds and increase timeout for large packages.
 ENV UV_CACHE_DIR=/root/.cache/uv
 ENV UV_HTTP_TIMEOUT=600
+ENV UV_LINK_MODE=copy
 
 # Create a virtual environment using uv for isolation.
 RUN uv venv /app/venv
@@ -59,8 +60,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 # Disables Python bytecode generation to minimize image size.
 ENV PYTHONDONTWRITEBYTECODE=1
-# Use tcmalloc for better memory management in Stable Diffusion.
-ENV LD_PRELOAD=libtcmalloc_minimal.so.4
 ENV PATH="/app/venv/bin:$PATH"
 
 # Install only necessary runtime dependencies
@@ -78,6 +77,9 @@ RUN apt-get update && apt-get install -y \
     caddy \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Use tcmalloc for better memory management in Stable Diffusion.
+ENV LD_PRELOAD=libtcmalloc_minimal.so.4
 
 WORKDIR /app
 
