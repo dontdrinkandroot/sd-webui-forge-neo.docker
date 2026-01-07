@@ -8,6 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 # Disables Python bytecode generation to minimize image size.
 ENV PYTHONDONTWRITEBYTECODE=1
+# Force Gradio to respect proxy headers by setting an empty ROOT_PATH.
+ENV GRADIO_ROOT_PATH=""
 
 # Install uv (extremely fast Python package installer and resolver)
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/

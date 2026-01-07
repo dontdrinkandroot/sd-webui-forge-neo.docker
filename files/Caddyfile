@@ -23,7 +23,7 @@
         header_up X-Forwarded-Host {host}
         # Trusted proxies for Cloudflare and Runpod internal networking
         # This allows Caddy to correctly parse X-Forwarded-For from these sources
-        trusted_proxies private_ranges
+        trusted_proxies 0.0.0.0/0
     }
 
     header {
