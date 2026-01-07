@@ -3,7 +3,7 @@ ARG FORGE_VERSION=2.7
 
 # --- Stage 1: Builder ---
 # Use the NVIDIA CUDA 12.8.1 runtime image as the builder base.
-FROM nvidia/cuda:12.8.1-runtime-ubuntu22.04 AS builder
+FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04 AS builder
 
 # Re-declare ARG so it's available in this stage
 ARG FORGE_VERSION
@@ -59,7 +59,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 # --- Stage 2: Runtime ---
 # Final production image
-FROM nvidia/cuda:12.8.1-runtime-ubuntu22.04
+FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
 
 # Re-declare ARG so it's available in this stage
 ARG FORGE_VERSION
@@ -73,16 +73,12 @@ ENV PATH="/app/venv/bin:$PATH"
 
 # Install only necessary runtime dependencies
 RUN apt-get update && apt-get install -y \
-    curl \
-    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg \
-    && curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | tee /etc/apt/sources.list.d/caddy-stable.list \
-    && apt-get update && apt-get install -y \
     python3 \
     # libgl1 and libglib2.0-0 are required by opencv-python (e.g., for autocrop) \
     libgl1 \
     libglib2.0-0 \
-    libgoogle-perftools4 \
-    libtcmalloc-minimal4 \
+    libgoogle-perftools4t64 \
+    libtcmalloc-minimal4t64 \
     supervisor \
     caddy \
     && apt-get clean \

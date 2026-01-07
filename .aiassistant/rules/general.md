@@ -22,7 +22,7 @@ For short reference we call it forge-neo.
 Dockerfile
 ----------
 
-It supports recent nvidia cards via cuda (12.8).
+It supports recent nvidia cards via cuda (12.8) on Ubuntu 24.04.
 It uses uv as a package manager while building.
 It uses version (tag) 2.x of forge-neo (configurable via `FORGE_VERSION` ARG).
 The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:${FORGE_VERSION}-cuda`.
