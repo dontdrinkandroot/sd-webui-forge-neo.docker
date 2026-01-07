@@ -40,8 +40,9 @@ RUN uv python install 3.11
 RUN git clone --branch ${FORGE_VERSION} --single-branch https://github.com/Haoming02/sd-webui-forge-classic.git . \
     && rm -rf .git
 
-# Add sageattention to requirements.txt
-RUN echo "sageattention" >> requirements.txt
+# Add sageattention and flash_attn to requirements.txt
+RUN echo "sageattention" >> requirements.txt && \
+    echo "flash_attn" >> requirements.txt
 
 # Set uv cache directory for persistent builds and increase timeout for large packages.
 ENV UV_CACHE_DIR=/root/.cache/uv
@@ -70,9 +71,9 @@ RUN chmod +x /usr/local/bin/start-ssh.sh
 EXPOSE 80 443 22
 
 # Default CLI arguments for Forge Neo. We add --uv to use uv for dependency installation.
-# We also add --xformers, --sage and --bnb to match previously pre-installed packages.
+# We also add --xformers, --sage, --flash and --bnb to match previously pre-installed packages.
 # --subpath / is added to support proxying (e.g. Runpod/Cloudflare) and ensure relative paths are used.
-ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api --uv --xformers --sage --bnb --subpath /"
+ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api --uv --xformers --sage --flash --bnb --subpath /"
 # AUTH_TOKEN: If set, Caddy will require this Bearer token for authentication.
 ENV AUTH_TOKEN=""
 

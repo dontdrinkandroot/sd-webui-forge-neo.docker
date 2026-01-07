@@ -41,7 +41,7 @@ By default caddy uses an internal ssl certificate but is also accessible via nor
 It runs on port 7860.
 It exposes the api via the `--api` argument.
 It does not download a model by default.
-We support sageattention.
+We support sageattention and flash attention.
 
 ### Supervisord
 
