@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     libtcmalloc-minimal4t64 \
     supervisor \
     caddy \
+    openssh-server \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -62,9 +63,11 @@ RUN mkdir -p models outputs local_estimations /var/log/supervisor /root/.cache/u
 # Configuration
 COPY files/Caddyfile /etc/caddy/Caddyfile
 COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY files/start-ssh.sh /usr/local/bin/start-ssh.sh
+RUN chmod +x /usr/local/bin/start-ssh.sh
 
-# Expose HTTP (80) and HTTPS (443) ports for Caddy.
-EXPOSE 80 443
+# Expose HTTP (80), HTTPS (443) and SSH (22) ports.
+EXPOSE 80 443 22
 
 # Default CLI arguments for Forge Neo. We add --uv to use uv for dependency installation.
 # We also add --xformers, --sage and --bnb to match previously pre-installed packages.

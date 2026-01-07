@@ -45,7 +45,13 @@ We support sageattention.
 
 ### Supervisord
 
-Both Caddy and Forge-Neo run as services at the same time via supervisord.
+Caddy, Forge-Neo and SSH run as services at the same time via supervisord.
+
+### SSH
+
+We support SSH access. The user can provide a public key via the `PUBLIC_KEY` environment variable, which will be added
+to `/root/.ssh/authorized_keys`.
+Port 22 is exposed.
 
 ## Self-Update Instruction
 
