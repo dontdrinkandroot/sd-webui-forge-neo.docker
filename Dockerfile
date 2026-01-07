@@ -1,83 +1,24 @@
-# Build-time arguments
+# Use the NVIDIA CUDA 12.9.1 runtime image.
+FROM nvidia/cuda:12.9.1-runtime-ubuntu24.04
+
 ARG FORGE_VERSION=2.7
 
-# --- Stage 1: Builder ---
-# Use the NVIDIA CUDA 12.8.1 runtime image as the builder base.
-FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04 AS builder
-
-# Re-declare ARG so it's available in this stage
-ARG FORGE_VERSION
-
-# Build-time environment variables
-ENV DEBIAN_FRONTEND=noninteractive
-ENV PYTHONUNBUFFERED=1
-
-# Install build-only dependencies (git is needed for cloning, python3-venv for venv creation)
-RUN apt-get update && apt-get install -y \
-    git \
-    python3 \
-    python3-venv \
-    python3-pip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install uv (extremely fast Python package installer and resolver)
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
-WORKDIR /app
-
-# Clone Stable Diffusion WebUI Forge Neo
-# This variant provides optimizations and new features over the classic WebUI.
-# We remove the .git directory to save space before copying to the runtime stage.
-RUN git clone --branch ${FORGE_VERSION} --single-branch https://github.com/Haoming02/sd-webui-forge-classic.git . \
-    && rm -rf .git
-
-# Set uv cache directory for persistent builds and increase timeout for large packages.
-ENV UV_CACHE_DIR=/root/.cache/uv
-ENV UV_HTTP_TIMEOUT=600
-ENV UV_LINK_MODE=copy
-
-# Create a virtual environment using uv for isolation.
-RUN uv venv /app/venv
-ENV PATH="/app/venv/bin:$PATH"
-
-# Install PyTorch, TorchVision and all requirements in one block to optimize layers.
-# We use sageattention as supported optimization.
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv pip install \
-    torch==2.7.1+cu128 \
-    torchvision==0.22.1+cu128 \
-    --extra-index-url https://download.pytorch.org/whl/cu128 \
-    && uv pip install -r requirements.txt \
-    && uv pip install \
-    xformers==0.0.33 \
-    bitsandbytes==0.49.0 \
-    gradio==4.40.0 \
-    gradio_imageslider==0.0.20 \
-    gradio_rangeslider==0.0.8 \
-    packaging==24.2 \
-    sageattention
-
-# --- Stage 2: Runtime ---
-# Final production image
-FROM nvidia/cuda:12.8.1-runtime-ubuntu24.04
-
-# Re-declare ARG so it's available in this stage
-ARG FORGE_VERSION
-
-# Run-time environment variables
+# Environment variables
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 # Disables Python bytecode generation to minimize image size.
 ENV PYTHONDONTWRITEBYTECODE=1
-ENV PATH="/app/venv/bin:$PATH"
 
-# Install only necessary runtime dependencies
+# Install uv (extremely fast Python package installer and resolver)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Install necessary runtime and build dependencies
+# libgl1 and libglib2.0-0 are required by opencv-python
+# libtcmalloc-minimal4t64 provides tcmalloc for better memory management
 RUN apt-get update && apt-get install -y \
-    python3 \
-    # libgl1 and libglib2.0-0 are required by opencv-python (e.g., for autocrop) \
+    git \
     libgl1 \
     libglib2.0-0 \
-    libgoogle-perftools4t64 \
     libtcmalloc-minimal4t64 \
     supervisor \
     caddy \
@@ -89,11 +30,34 @@ ENV LD_PRELOAD=libtcmalloc_minimal.so.4
 
 WORKDIR /app
 
-# Copy the application and the pre-installed virtual environment from the builder
-COPY --from=builder /app /app
+# Install Python 3.11 via uv
+RUN uv python install 3.11
+
+# Clone Stable Diffusion WebUI Forge Neo
+# This variant provides optimizations and new features over the classic WebUI.
+# We remove the .git directory to save space.
+RUN git clone --branch ${FORGE_VERSION} --single-branch https://github.com/Haoming02/sd-webui-forge-classic.git . \
+    && rm -rf .git
+
+# Add sageattention to requirements.txt
+RUN echo "sageattention" >> requirements.txt
+
+# Set uv cache directory for persistent builds and increase timeout for large packages.
+ENV UV_CACHE_DIR=/root/.cache/uv
+ENV UV_HTTP_TIMEOUT=600
+ENV UV_LINK_MODE=copy
+
+# Forge Neo environment variables to override defaults for CUDA 12.8 (compatible with 12.9.1)
+ENV TORCH_INDEX_URL="https://download.pytorch.org/whl/cu128"
+ENV TORCH_COMMAND="pip install torch==2.9.1+cu128 torchvision --index-url https://download.pytorch.org/whl/cu128"
+#ENV XFORMERS_PACKAGE="xformers==0.0.33 --extra-index-url https://download.pytorch.org/whl/cu128"
+
+# Create a virtual environment using uv for isolation with Python 3.11.
+RUN uv venv --python 3.11 /app/venv
+ENV PATH="/app/venv/bin:$PATH"
 
 # Pre-create necessary directories for persistent volumes and logging.
-RUN mkdir -p models outputs local_estimations /var/log/supervisor
+RUN mkdir -p models outputs local_estimations /var/log/supervisor /root/.cache/uv
 
 # Configuration
 COPY files/Caddyfile /etc/caddy/Caddyfile
@@ -102,8 +66,9 @@ COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Expose HTTP (80) and HTTPS (443) ports for Caddy.
 EXPOSE 80 443
 
-# Default CLI arguments for Forge Neo
-ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api"
+# Default CLI arguments for Forge Neo. We add --uv to use uv for dependency installation.
+# We also add --xformers, --sage and --bnb to match previously pre-installed packages.
+ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api --uv --xformers --sage --bnb"
 # AUTH_TOKEN: If set, Caddy will require this Bearer token for authentication.
 ENV AUTH_TOKEN=""
 
@@ -113,4 +78,4 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 LABEL maintainer="dontdrinkandroot"
 LABEL org.opencontainers.image.title="Stable Diffusion WebUI Forge Neo"
 LABEL org.opencontainers.image.version="${FORGE_VERSION}-cuda"
-LABEL org.opencontainers.image.description="Docker image for Stable Diffusion WebUI Forge Neo with CUDA 12.8.1 and Caddy proxy."
+LABEL org.opencontainers.image.description="Docker image for Stable Diffusion WebUI Forge Neo with CUDA 12.9.1 and Caddy proxy."

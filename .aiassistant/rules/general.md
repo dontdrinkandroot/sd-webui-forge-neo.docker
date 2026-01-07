@@ -8,7 +8,7 @@ Project Rules
 About
 -----
 
-This project provides a Docker image definition and the CI process for Stable Difussion WebUI Forge Neo.
+This project provides a Docker image definition and the CI process for Stable Difussion WebUI Forge Neo. It is especially suitable to run on runpod.io.
 
 Source Project
 ------------
@@ -22,12 +22,12 @@ For short reference we call it forge-neo.
 Dockerfile
 ----------
 
-It supports recent nvidia cards via cuda (12.8) on Ubuntu 24.04.
-It uses uv as a package manager while building.
+It supports recent nvidia cards via cuda (12.9.1) on Ubuntu 24.04.
+It uses uv as a package manager and to manage the Python version (3.11).
 It uses version (tag) 2.x of forge-neo (configurable via `FORGE_VERSION` ARG).
 The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:${FORGE_VERSION}-cuda`.
 The dockerfile is cleanly documented so decisions taken and the reasoning behind it can be clearly understood.
-We want to keep the image size minimal by using a multi-stage build.
+We want to keep the image size minimal.
 All files to copy are stored under `files/`.
 
 ### Caddy
