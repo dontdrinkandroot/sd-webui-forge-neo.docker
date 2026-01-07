@@ -20,6 +20,10 @@
         header_up X-Real-IP {remote_host}
         header_up X-Forwarded-For {remote_host}
         header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+        # Trusted proxies for Cloudflare and Runpod internal networking
+        # This allows Caddy to correctly parse X-Forwarded-For from these sources
+        trusted_proxies private_ranges
     }
 
     header {

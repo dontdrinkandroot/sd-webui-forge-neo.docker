@@ -71,7 +71,8 @@ EXPOSE 80 443 22
 
 # Default CLI arguments for Forge Neo. We add --uv to use uv for dependency installation.
 # We also add --xformers, --sage and --bnb to match previously pre-installed packages.
-ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api --uv --xformers --sage --bnb"
+# --subpath / is added to support proxying (e.g. Runpod/Cloudflare) and ensure relative paths are used.
+ENV CLI_ARGS="--listen --port 7860 --enable-insecure-extension-access --api --uv --xformers --sage --bnb --subpath /"
 # AUTH_TOKEN: If set, Caddy will require this Bearer token for authentication.
 ENV AUTH_TOKEN=""
 
