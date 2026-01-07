@@ -6,12 +6,36 @@
 
 :80, :443 {
     # If AUTH_TOKEN is set, require Bearer token authentication
+    # Skip authentication for OPTIONS requests (CORS preflight)
     @auth {
         expression {env.AUTH_TOKEN} != ""
+        not method OPTIONS
         not header_regexp Authorization "Bearer {env.AUTH_TOKEN}"
     }
     respond @auth "Unauthorized" 401
 
     # Proxy all other requests to Forge Neo
-    reverse_proxy localhost:7860
+    reverse_proxy localhost:7860 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+    }
+
+    header {
+        # Allow all origins
+        Access-Control-Allow-Origin *
+        # Allow all methods
+        Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+        # Allow all headers
+        Access-Control-Allow-Headers *
+        # Expose all headers
+        Access-Control-Expose-Headers *
+    }
+
+    # Handle OPTIONS requests
+    @options {
+        method OPTIONS
+    }
+    respond @options 204
 }
