@@ -1,6 +1,12 @@
+# Build-time arguments
+ARG FORGE_VERSION=2.7
+
 # --- Stage 1: Builder ---
 # Use the NVIDIA CUDA 12.8.1 runtime image as the builder base.
 FROM nvidia/cuda:12.8.1-runtime-ubuntu22.04 AS builder
+
+# Re-declare ARG so it's available in this stage
+ARG FORGE_VERSION
 
 # Build-time environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,10 +25,10 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
-# Clone Stable Diffusion WebUI Forge Neo (tag 2.7)
+# Clone Stable Diffusion WebUI Forge Neo
 # This variant provides optimizations and new features over the classic WebUI.
 # We remove the .git directory to save space before copying to the runtime stage.
-RUN git clone --branch 2.7 --single-branch https://github.com/Haoming02/sd-webui-forge-classic.git . \
+RUN git clone --branch ${FORGE_VERSION} --single-branch https://github.com/Haoming02/sd-webui-forge-classic.git . \
     && rm -rf .git
 
 # Set uv cache directory for persistent builds and increase timeout for large packages.
@@ -54,6 +60,9 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 # --- Stage 2: Runtime ---
 # Final production image
 FROM nvidia/cuda:12.8.1-runtime-ubuntu22.04
+
+# Re-declare ARG so it's available in this stage
+ARG FORGE_VERSION
 
 # Run-time environment variables
 ENV DEBIAN_FRONTEND=noninteractive
@@ -107,5 +116,5 @@ CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
 
 LABEL maintainer="dontdrinkandroot"
 LABEL org.opencontainers.image.title="Stable Diffusion WebUI Forge Neo"
-LABEL org.opencontainers.image.version="2.7-cuda"
+LABEL org.opencontainers.image.version="${FORGE_VERSION}-cuda"
 LABEL org.opencontainers.image.description="Docker image for Stable Diffusion WebUI Forge Neo with CUDA 12.8.1 and Caddy proxy."

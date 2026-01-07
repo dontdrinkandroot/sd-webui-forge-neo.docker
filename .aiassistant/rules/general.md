@@ -24,8 +24,8 @@ Dockerfile
 
 It supports recent nvidia cards via cuda (12.8).
 It uses uv as a package manager while building.
-It uses version (tag) 2.7 of forge-neo.
-The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:2.7-cuda`.
+It uses version (tag) 2.x of forge-neo (configurable via `FORGE_VERSION` ARG).
+The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:${FORGE_VERSION}-cuda`.
 The dockerfile is cleanly documented so decisions taken and the reasoning behind it can be clearly understood.
 We want to keep the image size minimal by using a multi-stage build.
 All files to copy are stored under `files/`.

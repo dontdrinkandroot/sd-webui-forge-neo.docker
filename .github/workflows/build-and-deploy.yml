@@ -11,6 +11,8 @@ on:
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+    env:
+      FORGE_VERSION: '2.7'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -29,6 +31,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: dontdrinkandroot/sd-webui-forge-neo:2.7-cuda
+          build-args: |
+            FORGE_VERSION=${{ env.FORGE_VERSION }}
+          tags: dontdrinkandroot/sd-webui-forge-neo:${{ env.FORGE_VERSION }}-cuda
           cache-from: type=gha
           cache-to: type=gha,mode=max
