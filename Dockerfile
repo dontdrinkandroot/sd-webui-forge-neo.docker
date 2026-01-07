@@ -91,8 +91,8 @@ COPY --from=builder /app /app
 RUN mkdir -p models outputs local_estimations /var/log/supervisor
 
 # Configuration
-COPY Caddyfile /etc/caddy/Caddyfile
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY files/Caddyfile /etc/caddy/Caddyfile
+COPY files/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Expose HTTP (80) and HTTPS (443) ports for Caddy.
 EXPOSE 80 443

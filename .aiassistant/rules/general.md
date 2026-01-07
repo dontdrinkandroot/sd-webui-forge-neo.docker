@@ -28,6 +28,7 @@ It uses version (tag) 2.7 of forge-neo.
 The resulting image should be called `dontdrinkandroot/sd-webui-forge-neo:2.7-cuda`.
 The dockerfile is cleanly documented so decisions taken and the reasoning behind it can be clearly understood.
 We want to keep the image size minimal by using a multi-stage build.
+All files to copy are stored under `files/`.
 
 ### Caddy
 
@@ -45,3 +46,14 @@ We support sageattention.
 ### Supervisord
 
 Both Caddy and Forge-Neo run as services at the same time via supervisord.
+
+## Self-Update Instruction
+
+This guidelines file is a living document and MUST be actively maintained by the LLM Agent.
+
+* **Trigger:** Whenever significant changes are made to the tech stack, project structure, coding guidelines, or key features, the LLM Agent MUST immediately update this file (`.aiassistant/rules/general.md`) to reflect the current state of the project.
+* **Content:** 
+    * Add any information that could have helped the agent to solve the task more efficiently or in fewer steps.
+    * Remove outdated, obsolete, or incorrect information.
+    * Ensure all tech stack versions and library names are accurate.
+* **Proactivity:** Do not wait for explicit instructions to update these guidelines if you identify a discrepancy between the guidelines and the actual codebase.
