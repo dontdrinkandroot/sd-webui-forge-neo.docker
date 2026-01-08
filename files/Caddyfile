@@ -16,11 +16,16 @@
 
     # Proxy all other requests to Forge Neo
     reverse_proxy localhost:7860 {
-        header_up Host {host}
+        # Prefer the original values set by the Runpod proxy (if present)
+        header_up Host {http.request.header.X-Forwarded-Host}
+        header_up X-Forwarded-Host {http.request.header.X-Forwarded-Host}
+        header_up X-Forwarded-Proto {http.request.header.X-Forwarded-Proto}
+        header_up X-Forwarded-Port {http.request.header.X-Forwarded-Port}
+
+        # Keep client IP chain (useful for logs/security; doesn't affect the asset URL bug)
         header_up X-Real-IP {remote_host}
-        header_up X-Forwarded-For {remote_host}
-        header_up X-Forwarded-Proto {scheme}
-        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-For {http.request.header.X-Forwarded-For}
+
         # Trusted proxies for Cloudflare and Runpod internal networking
         # This allows Caddy to correctly parse X-Forwarded-For from these sources
         trusted_proxies 0.0.0.0/0
